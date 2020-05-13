@@ -154,11 +154,11 @@ class Scraper():
 
     def getFileSize(self, url):
         response = self.getUrl(url, True)
-        return response.headers.get('Content-Length')
+        return response.headers.get('Content-Length') if response else None
 
     def getUrl(self, url, stream=False):
         try:
-            return requests.get(url, stream=True, headers=self.headers) if stream else requests.get(url, headers=self.headers)
+            return requests.get(url, stream=True) if stream else requests.get(url, headers=self.headers)
         except (ConnectionError, URLError, BlockingIOError, InvalidURL, AttributeError) as error:
             self.handleError(error, url)    
 
