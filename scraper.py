@@ -2,7 +2,7 @@
 """ 
     Web Scraper
 """
-import re, argparse, urllib, datefinder
+import re, urllib, argparse, requests
 
 from os import path
 from pprint import pprint
@@ -10,6 +10,8 @@ from urllib.parse import urlparse
 from http.client import InvalidURL
 from urllib.error import  URLError
 from urllib.request import urlopen as request  # Web client
+
+from requests.exceptions import ConnectionError
 
 class Scraper():
 
@@ -79,28 +81,18 @@ class Scraper():
         if depth <= self.max_depth:
 
             # Fetch Content
-            try:
-                self.client = self.getUrl(url)
-
-            except (URLError, BlockingIOError, InvalidURL, AttributeError) as error:
-                self.handleError(error, url)
-
-            else:
-                # Get  Page Content
-                pagecontent = self.client.read()
-            
-            self.client.close()
-
+            self.client = self.getUrl(url)
+            pagecontent = self.client.content
+       
             # Get URLs and Links
             urls = self.getLinks(pagecontent)
 
             for inner_url in urls:
-            # Process urls
+                # Process urls
                 self.processUrl(self.filterString(inner_url), depth)
 
             # Cleanup            
             self.resetItemContainer()
-            self.response.close()
 
         self.counter += 1
         self.output[url] = self.current_items
@@ -161,17 +153,14 @@ class Scraper():
             )
 
     def getFileSize(self, url):
-        response = self.getUrl(url)        
-        return response.headers['content-length']
+        response = self.getUrl(url, True)
+        return response.headers.get('Content-Length')
 
-    def getUrl(self, url):        
+    def getUrl(self, url, stream=False):
         try:
-            self.request = urllib.request.Request(url, data=None, headers=self.headers)
-            self.response = urllib.request.urlopen(self.request)
-        except (ValueError, URLError, BlockingIOError, InvalidURL) as error:
-            self.handleError(url, error)
-
-        return self.response
+            return requests.get(url, stream=True, headers=self.headers) if stream else requests.get(url, headers=self.headers)
+        except (ConnectionError, URLError, BlockingIOError, InvalidURL, AttributeError) as error:
+            self.handleError(error, url)    
 
     def handleError(self, url, error):
         if hasattr(error, 'reason'):
@@ -181,14 +170,14 @@ class Scraper():
         else:
             print('Encountered an error. URL({})'.format(url))
 
+        return
+
     def filterString(self, string):
         return string.strip()
 
 """
     SCRIPT
 """
-
-# required arg
 
 parser = argparse.ArgumentParser(description='A simple url scraper')
    
