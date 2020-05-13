@@ -96,7 +96,7 @@ class Scraper():
 
             for inner_url in urls:
             # Process urls
-                self.processUrl(inner_url, depth)
+                self.processUrl(self.filterString(inner_url), depth)
 
             # Cleanup            
             self.resetItemContainer()
@@ -180,6 +180,9 @@ class Scraper():
             print('The server couldn\'t fulfill the request. URL({}) Error code:'.format(url, error.code))
         else:
             print('Encountered an error. URL({})'.format(url))
+
+    def filterString(self, string):
+        return string.strip()
 
 """
     SCRIPT
