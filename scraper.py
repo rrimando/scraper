@@ -114,7 +114,7 @@ class Scraper():
         link_type = 'links'
 
         file_types = {
-            'images': ['jpg', 'png', 'gif'],
+            'images': ['jpg', 'png', 'gif', 'ico'],
             'javascript': ['js'],
             'stylesheets': ['css', 'scss'],
         }
@@ -158,7 +158,7 @@ class Scraper():
 
     def getUrl(self, url, stream=False):
         try:
-            return requests.get(url, stream=True) if stream else requests.get(url, headers=self.headers)
+            return requests.get(url, stream=True, headers=self.headers) if stream else requests.get(url, headers=self.headers)
         except (ConnectionError, URLError, BlockingIOError, InvalidURL, AttributeError) as error:
             self.handleError(error, url)    
 
