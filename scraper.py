@@ -76,8 +76,6 @@ class Scraper():
 
         print("(" + str(self.counter) + ")SCRAPING : " + url)
 
-        self.output[url] = {}
-
         if depth <= self.max_depth:
 
             # Fetch Content
@@ -92,8 +90,6 @@ class Scraper():
                 self.processUrl(self.filterString(inner_url), depth)
 
         self.counter += 1
-        self.output[url] = self.current_items
-
 
     def getLinks(self, content):
         return re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(content)) + re.findall(r'src="(.*?)"', str(content)); + re.findall(r'href="(.*?)"', str(content));
