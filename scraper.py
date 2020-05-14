@@ -71,7 +71,6 @@ class Scraper():
     def processQueue(self):
         while True:
             queue_item = self.queue.get()
-            print('Working on {}...'.format(queue_item['url']))
             self.processLink(queue_item['url'], queue_item['depth'])
             print('Done')
             self.queue.task_done()
@@ -154,7 +153,7 @@ class Scraper():
             next_depth = depth + 1
             if next_depth <= self.max_depth:
                 if link_type not in ['javascript', 'images']:
-                    self.queue.put({'url': url, 'depth': next_depth})
+                    self.queue.put({'url': self.filterString(url), 'depth': next_depth})
 
             self.current_items[link_type].append(
                 {
