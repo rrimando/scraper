@@ -71,7 +71,7 @@ class Scraper():
     def processQueue(self):
         while True:
             queue_item = self.queue.get()
-            print(f'Working on {queue_item}...')
+            print('Working on {}...'.format(queue_item['url']))
             self.processLink(queue_item['url'], queue_item['depth'])
             print('Done')
             self.queue.task_done()
