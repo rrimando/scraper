@@ -34,9 +34,6 @@ class Scraper():
         self.request = []
         self.response = []
 
-        # Iteration configuration
-        self.resetItemContainer()
-
         # Queue
         self.queue = queue.Queue()
         self.processed_urls = []
@@ -75,14 +72,6 @@ class Scraper():
             print('Done')
             self.queue.task_done()
 
-    def resetItemContainer(self):
-        self.current_items = {
-            'links': [],
-            'images': [],
-            'javascript': [],
-            'stylesheets': [],
-        }
-
     def processLink(self, url, depth=1):
 
         print("(" + str(self.counter) + ")SCRAPING : " + url)
@@ -101,9 +90,6 @@ class Scraper():
             for inner_url in urls:
                 # Process urls
                 self.processUrl(self.filterString(inner_url), depth)
-
-            # Cleanup            
-            self.resetItemContainer()
 
         self.counter += 1
         self.output[url] = self.current_items
@@ -130,7 +116,7 @@ class Scraper():
             'stylesheets': ['css', 'scss'],
         }
         # Append protocol and base url
-        if '://' not in url:
+        if url and '://' not in url:
             delimiter = "" if url[:-1].startswith("/") else "/"
             url = (delimiter).join([self.starting_url, url])
         
@@ -155,13 +141,7 @@ class Scraper():
                 if link_type not in ['javascript', 'images']:
                     self.queue.put({'url': self.filterString(url), 'depth': next_depth})
 
-            self.current_items[link_type].append(
-                {
-                    'url': url,
-                    'size': "{} KB".format(filesize) if filesize else 'Could not fetch filesize',
-                    'depth': depth
-                }
-            )
+        print('Type: {}, Url: {}, Filesize: {}'.format(link_type, url, filesize))
 
     def getFileSize(self, url):
         response = self.getUrl(url, True)
@@ -219,7 +199,6 @@ if urlValidator(args.url):
             ]
         })
 
-    data = scraper.start()
-    pprint(data)
+    scraper.start()
 else:
     print('Please provide a valid URL')
