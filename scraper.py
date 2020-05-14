@@ -137,7 +137,7 @@ class Scraper():
                 if link_type not in ['javascript', 'images']:
                     self.queue.put({'url': self.filterString(url), 'depth': next_depth})
 
-        print('Type: {}, Url: {}, Filesize: {}'.format(link_type, url, filesize))
+        print('Type: {}, Url: {}, Filesize: {}, Depth: ({})'.format(link_type, url, filesize, depth))
 
     def getFileSize(self, url):
         response = self.getUrl(url, True)
