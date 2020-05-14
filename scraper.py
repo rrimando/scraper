@@ -2,7 +2,7 @@
 """ 
     Web Scraper
 """
-import re, urllib, argparse, requests
+import re, urllib, threading, queue, argparse, requests
 
 from os import path
 from pprint import pprint
@@ -38,7 +38,7 @@ class Scraper():
         self.resetItemContainer()
 
         # Queue
-        self.queue = []
+        self.queue = queue.Queue()
         self.processed_urls = []
 
         # Output
@@ -56,13 +56,25 @@ class Scraper():
             # Process Start URL
             self.processLink(self.starting_url, 1)
 
-        # Process Queue
-        while len(self.queue):
-            queue_item = self.queue.pop()
-            self.processLink(queue_item['url'], queue_item['depth'])
+        # Create threads to process queue
+        try:
+            threading.Thread(target=self.processQueue, daemon=True).start()
+        except Exception as error:
+            print("Error: unable to start thread: ({})".format(error))
+        
+        # Block till all tasks are done
+        self.queue.join()
 
         print('COMPLETED')
         return self.output
+
+    def processQueue(self):
+        while True:
+            queue_item = self.queue.get()
+            print(f'Working on {queue_item}...')
+            self.processLink(queue_item['url'], queue_item['depth'])
+            print('Done')
+            self.queue.task_done()
 
     def resetItemContainer(self):
         self.current_items = {
@@ -142,7 +154,7 @@ class Scraper():
             next_depth = depth + 1
             if next_depth <= self.max_depth:
                 if link_type not in ['javascript', 'images']:
-                    self.queue.append({'url': url, 'depth': next_depth})
+                    self.queue.put({'url': url, 'depth': next_depth})
 
             self.current_items[link_type].append(
                 {
